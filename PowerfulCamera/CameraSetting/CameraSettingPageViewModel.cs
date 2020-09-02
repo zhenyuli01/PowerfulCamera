@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
 using Camera = PowerfulCamera.CameraTools.Camera; //指定来源
@@ -19,11 +20,10 @@ namespace PowerfulCamera.CameraSetting
         private string currentItemName;
         private HWindow currentHWindow;
         public List<HWindow> MainWindowHWindowList = new List<HWindow>();
-        public Dictionary<int, Camera> CameraWorkList = Cameras.CameraWorkList;
+        public List<Camera> CameraWorkList = Cameras.CameraWorkList;
         private bool mergeIsChecked;            //合并
         private bool intersectionIsChecked;     //交集
         private bool subtractionIsChecked;      //差集
-        private bool grayModeSwitch;
         private string leftButtonVisibility;
         private string rightButtonVisibility;
         public int CurrentDisplayCameraID = 0;
@@ -85,13 +85,13 @@ namespace PowerfulCamera.CameraSetting
         public RelayCommand LeftButtonCommand { set; get; } //左
         public RelayCommand RightButtonCommand { set; get; }//右
         public RelayCommand CleanROICommand { set; get; }
-        public RelayCommand StopButtonCommand { set; get; }
         public RelayCommand DrawLineCommand { set; get; }
         public RelayCommand DrawCircleCommand { set; get; }
         public RelayCommand DrawEllipseCommand { set; get; }
         public RelayCommand DrawRectangleCommand { set; get; }
         public RelayCommand DrawSpinRectangleCommand { set; get; }
         public RelayCommand DrawAnythingCommand { set; get; }
+        public RelayCommand StopGrabClick { set; get; }
         #endregion
 
         /// <summary>
@@ -99,18 +99,38 @@ namespace PowerfulCamera.CameraSetting
         /// </summary>
         public CameraSettingPageViewModel()
         {
-            CurrentDisplayCameraID = 1;
+            CurrentDisplayCameraID = 0;
+            LeftButtonVisibility = "Collapsed";
+            RightButtonVisibility = "Visible";
+            if (CameraWorkList.Count() > 0)
+                CurrentItemName = CameraWorkList[0].Name;
+            if (CameraWorkList.Count() == 1 || CameraWorkList.Count() == 0)
+            {
+                LeftButtonVisibility = "Collapsed";
+                RightButtonVisibility = "Collapsed";
+            }
             LeftButtonCommand = new RelayCommand(() =>
-            {               
-                CurrentDisplayCameraID--;
-                if (CurrentDisplayCameraID == 1)
-                    LeftButtonVisibility = "Collapsed";
+            {
+                LeftButtonEvent();
             });
             RightButtonCommand = new RelayCommand(() =>
             {
-                CurrentDisplayCameraID++;
-                if (CurrentDisplayCameraID == CameraWorkList.Count())
-                    RightButtonVisibility = "Collapsed";
+                RightButtonEvent();
+            });
+            StopGrabClick = new RelayCommand(() =>
+            {
+                HObject Image = null;
+                if (CameraWorkList[CurrentDisplayCameraID].IsOpen)
+                {
+                    CameraWorkList[CurrentDisplayCameraID].Stop();
+                    CameraWorkList[CurrentDisplayCameraID].GrabImage(out Image);
+                }
+                else if (!CameraWorkList[CurrentDisplayCameraID].IsOpen)
+                    CameraWorkList[CurrentDisplayCameraID].Play();
+            });
+            DrawLineCommand = new RelayCommand(() =>
+            {
+
             });
         }
 
@@ -140,6 +160,28 @@ namespace PowerfulCamera.CameraSetting
                 }
                 Console.WriteLine($"切换窗口线程退出");
             });
+        }
+
+        public void LeftButtonEvent()
+        {
+            CurrentDisplayCameraID--;
+            if (CurrentDisplayCameraID == 0)
+            {
+                LeftButtonVisibility = "Collapsed";
+                RightButtonVisibility = "Visible";
+                CurrentItemName = CameraWorkList[CurrentDisplayCameraID].Name;
+            }
+        }
+
+        public void RightButtonEvent()
+        {
+            CurrentDisplayCameraID++;
+            if (CurrentDisplayCameraID == CameraWorkList.Count()-1)
+            {
+                RightButtonVisibility = "Collapsed";
+                LeftButtonVisibility = "Visible";
+                CurrentItemName = CameraWorkList[CurrentDisplayCameraID].Name;
+            }                
         }
     }
 }

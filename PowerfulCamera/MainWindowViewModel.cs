@@ -115,7 +115,7 @@ namespace PowerfulCamera
                             if (camera.Connect())
                             {
                                 CamerasList.Add(camera);
-                                Cameras.CameraWorkList.Add(camera.Index, camera);
+                                Cameras.CameraWorkList.Add(camera);
                             }
                         }
                     }

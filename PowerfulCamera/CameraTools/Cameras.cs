@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using System.Threading;
 
 namespace PowerfulCamera.CameraTools
 {
@@ -230,7 +231,7 @@ namespace PowerfulCamera.CameraTools
         }
 
         /// <summary>
-        /// 摄像机采集图形
+        /// 摄像机异步采集图形
         /// </summary>
         public async void GrabImageAsync()
         {
@@ -294,6 +295,37 @@ namespace PowerfulCamera.CameraTools
             });
         }
 
+        /// <summary>
+        /// 摄像机同步采集图片
+        /// </summary>
+        /// <param name="Image">采集到的图像</param>
+        public void GrabImage(out HObject Image)
+        {
+            Image = null;
+            if (CameraHandle == null) 
+                return;
+            if (IsOpen)
+                Stop();            
+            HOperatorSet.GenEmptyObj(out Image);            
+            try
+            {
+                HOperatorSet.GrabImage(out Image, CameraHandle);
+                CurrentHWindow.DispImageFit(Image);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"同步采集失败,错误代码{ex}");
+                MessageBox.Show("Error:摄像机采集图像失败" + Name + " 错误代码:" + ex.ToString(), "摄像机读取错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        /// <summary>
+        /// 摄像机+摄像机=摄像机
+        /// </summary>
+        /// <param name="camera1">摄像机1</param>
+        /// <param name="camera2">摄像机2</param>
+        /// <returns></returns>
         public static bool operator +(Camera camera1, Camera camera2)
         {
             throw new NotImplementedException();
@@ -357,11 +389,12 @@ namespace PowerfulCamera.CameraTools
 
     public sealed class Cameras : IDelayTime
     {
-        public static Dictionary<int, Camera> CameraWorkList = new Dictionary<int, Camera>();
+        //public static Dictionary<int, Camera> CameraWorkList = new Dictionary<int, Camera>();
+        public static List<Camera> CameraWorkList = new List<Camera>();
         #region ##方法区域
         //[DllImport("hAcqChinaVision17_X64.dll")]
         //private extern static void 
-        /*找相机,返回字典*/           
+        /*找相机,返回字典*/
         public static bool FindCameras(out Dictionary<int, Camera> keyValues)
         {
             int index = 0;

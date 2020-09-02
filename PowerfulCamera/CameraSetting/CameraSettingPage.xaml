@@ -59,12 +59,27 @@
                             Foreground="Red"
                             VerticalAlignment="Bottom"
                             Command="{Binding CleanROICommand}"/>
-                        <Button Grid.Column="1" Style="{StaticResource AduButtonIcon}" attached:Icon.Geometry="{StaticResource 暂停}" Background="Transparent" Margin="5,0,5,0"                                    
+                        <!--<Button Grid.Column="1" Style="{StaticResource AduButtonIcon}" attached:Icon.Geometry="{StaticResource 暂停}" Background="Transparent" Margin="5,0,5,0"                                    
                             attached:Icon.Height="35"                                        
                             ToolTip="暂停"
                             Foreground="Red"
                             VerticalAlignment="Bottom"
-                            Command="{Binding StopButtonCommand}"/>
+                            Command="{Binding StopButtonCommand}"/>-->
+                        <ToggleButton Width="35"
+                              Height="35"
+                              Margin="5,0,5,0"
+                              Foreground="Red"
+                              VerticalAlignment="Bottom"
+                              Command="{Binding StopGrabClick}"
+                              Style="{DynamicResource MahApps.Styles.ToggleButton.ExpanderHeader.Base}">
+                            <ToggleButton.ContentTemplate>
+                                <DataTemplate>
+                                    <iconPacks:PackIconModern Width="30"
+                                                      Height="30"
+                                                      Kind="ControlPause" />
+                                </DataTemplate>
+                            </ToggleButton.ContentTemplate>
+                        </ToggleButton>
                         <Button Grid.Column="1" Style="{StaticResource AduButtonIcon}" attached:Icon.Geometry="{StaticResource 直线}" Background="Transparent" Margin="5,0,5,0"                                    
                             attached:Icon.Height="35"                                        
                             ToolTip="画直线"
